@@ -1,0 +1,413 @@
+{
+  "info": {
+    "name": "Internal Leave API",
+    "description": "REST API for managing employee leave requests with JWT authentication",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "leave_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Endpoints untuk autentikasi pengguna. Termasuk registrasi akun baru dan login untuk mendapatkan JWT token yang diperlukan untuk mengakses endpoint lainnya.",
+      "item": [
+        {
+          "name": "Register User",
+          "description": "Mendaftarkan akun pengguna baru dengan email dan password. Endpoint ini tidak memerlukan autentikasi.",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/register",
+                  "host": ["{{base_url}}"],
+                  "path": ["auth", "register"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"id\": 1,\n  \"email\": \"user@example.com\",\n  \"createdAt\": \"2024-02-02T10:00:00.000Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login User",
+          "description": "Melakukan autentikasi pengguna dan menerima JWT token. Simpan token ke variable {{token}} untuk digunakan di request-request selanjutnya.",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": ["{{base_url}}"],
+                  "path": ["auth", "login"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"user\": {\n    \"id\": 1,\n    \"email\": \"user@example.com\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Leaves",
+      "description": "Endpoints untuk mengelola permintaan cuti karyawan. Termasuk membuat request cuti baru, melihat daftar cuti, dan mengubah status approval cuti.",
+      "item": [
+        {
+          "name": "Create Leave Request",
+          "description": "Membuat request cuti baru. Memerlukan autentikasi JWT. Tipe cuti yang didukung: ANNUAL, SICK, PERSONAL, COMPASSIONATE",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"ANNUAL\",\n  \"startDate\": \"2024-03-01\",\n  \"endDate\": \"2024-03-05\",\n  \"reason\": \"Vacation\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/leaves",
+              "host": ["{{base_url}}"],
+              "path": ["leaves"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 201,
+              "body": "{\n  \"id\": 1,\n  \"userId\": 1,\n  \"type\": \"ANNUAL\",\n  \"startDate\": \"2024-03-01\",\n  \"endDate\": \"2024-03-05\",\n  \"reason\": \"Vacation\",\n  \"status\": \"PENDING\",\n  \"createdAt\": \"2024-02-02T10:00:00.000Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get All Leaves",
+          "description": "Mengambil daftar semua request cuti. Memerlukan autentikasi JWT.",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/leaves",
+              "host": ["{{base_url}}"],
+              "path": ["leaves"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "body": "[\n  {\n    \"id\": 1,\n    \"userId\": 1,\n    \"type\": \"ANNUAL\",\n    \"startDate\": \"2024-03-01\",\n    \"endDate\": \"2024-03-05\",\n    \"reason\": \"Vacation\",\n    \"status\": \"PENDING\",\n    \"createdAt\": \"2024-02-02T10:00:00.000Z\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Get Leave by ID",
+          "description": "Mengambil detail request cuti spesifik berdasarkan ID. Parameter path: leave_id (integer). Memerlukan autentikasi JWT.",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/leaves/{{leave_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["leaves", "{{leave_id}}"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "body": "{\n  \"id\": 1,\n  \"userId\": 1,\n  \"type\": \"ANNUAL\",\n  \"startDate\": \"2024-03-01\",\n  \"endDate\": \"2024-03-05\",\n  \"reason\": \"Vacation\",\n  \"status\": \"PENDING\",\n  \"createdAt\": \"2024-02-02T10:00:00.000Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Leave Status",
+          "description": "Mengubah status approval dari request cuti. Parameter path: leave_id (integer). Status yang diperbolehkan: APPROVED, REJECTED, CANCELLED. Memerlukan autentikasi JWT.",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"APPROVED\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/leaves/{{leave_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["leaves", "{{leave_id}}", "status"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "body": "{\n  \"id\": 1,\n  \"userId\": 1,\n  \"type\": \"ANNUAL\",\n  \"startDate\": \"2024-03-01\",\n  \"endDate\": \"2024-03-05\",\n  \"reason\": \"Vacation\",\n  \"status\": \"APPROVED\",\n  \"createdAt\": \"2024-02-02T10:00:00.000Z\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "description": "Endpoints untuk mengelola data pengguna. Termasuk melihat daftar pengguna, mendapatkan detail pengguna, mengubah data pengguna, dan menghapus akun pengguna.",
+      "item": [
+        {
+          "name": "Get All Users",
+          "description": "Mengambil daftar semua pengguna. Memerlukan autentikasi JWT.",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["users"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "body": "[\n  {\n    \"id\": 1,\n    \"email\": \"user@example.com\",\n    \"name\": \"John Doe\",\n    \"createdAt\": \"2024-02-02T10:00:00.000Z\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Get User by ID",
+          "description": "Mengambil detail pengguna spesifik berdasarkan ID. Parameter path: user_id (integer). Memerlukan autentikasi JWT.",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "body": "{\n  \"id\": 1,\n  \"email\": \"user@example.com\",\n  \"name\": \"John Doe\",\n  \"createdAt\": \"2024-02-02T10:00:00.000Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update User",
+          "description": "Mengubah data pengguna. Parameter path: user_id (integer). Saat ini mendukung perubahan field name. Memerlukan autentikasi JWT.",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"User Name\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "body": "{\n  \"id\": 1,\n  \"email\": \"user@example.com\",\n  \"name\": \"User Name\",\n  \"createdAt\": \"2024-02-02T10:00:00.000Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete User",
+          "description": "Menghapus akun pengguna. Parameter path: user_id (integer). Aksi ini tidak dapat dibatalkan. Memerlukan autentikasi JWT.",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "body": "{\n  \"message\": \"User deleted successfully\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
