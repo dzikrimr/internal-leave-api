@@ -33,11 +33,7 @@ This project uses a **Layered Architecture Pattern** within a Modular structure,
 
 #### **Why Layered Architecture?**
 
-1. **Separation of Concerns (SoC)**: Each layer has a specific responsibility:
-   - **Controllers** handle incoming requests, validate input, and return responses
-   - **Services** contain business logic and data manipulation
-   - **Entities** represent database schema and relationships
-   - **DTOs** ensure data validation and type safety
+1. **Separation of Concerns (SoC)**: Each layer has a specific responsibility
 
 2. **Single Responsibility Principle (SRP)**: Each class has one reason to change
 
