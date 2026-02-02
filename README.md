@@ -343,10 +343,6 @@ npm run build
 npm run start:prod
 ```
 
-## 📄 License
-
-This project is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-
 ## 👨‍💻 Development Notes
 
 ### Common Tasks
@@ -383,5 +379,5 @@ PORT=3001 npm run start:dev
 - Use login endpoint to get a new token
 - Include token in `Authorization: Bearer <token>` header
 
----
-
+## 👤 Author
+Dzikri Murtadlo as Backend Developer
