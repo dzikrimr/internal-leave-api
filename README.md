@@ -24,21 +24,26 @@ This is a **production-ready REST API** demonstrating modern web application dev
 
 ### **Layered Architecture Pattern (Controllers, Services, Entities)**
 
-This project uses a **Layered Architecture Pattern** within a Modular structure. Each feature module is organized into distinct layers:
+This project uses a **Layered Architecture Pattern** within a Modular structure, which is the recommended approach for NestJS applications. Each feature module is organized into distinct layers:
 
-| Layer | Responsibility | Example |
-|-------|---------------|---------|
-| **Controller** | HTTP request/response handling, Input validation | `@Controller()`, `@Get()` |
-| **Service** | Business logic, Data manipulation | `@Injectable()`, CRUD operations |
-| **Entity** | Database schema, Relationships | `@Entity()`, `@Column()` |
-| **DTO** | Input validation, Type safety | `class-validator` decorators |
+- **Controllers**: Handle HTTP requests and responses
+- **Services**: Implement business logic
+- **Entities**: Define database models
+- **DTOs**: Data Transfer Objects for validation
 
-#### **Benefits:**
+#### **Why Layered Architecture?**
 
-- **Separation of Concerns**: Each layer has a specific responsibility
-- **Testability**: Can test layers independently with mocked dependencies
-- **Maintainability**: Changes in one layer don't affect others
-- **Scalability**: Easy to add new features following the same pattern
+1. **Separation of Concerns (SoC)**: Each layer has a specific responsibility
+
+2. **Single Responsibility Principle (SRP)**: Each class has one reason to change
+
+3. **Testability**: Each layer can be tested independently with mocked dependencies
+
+4. **Maintainability**: Changes in one layer don't affect others (if interfaces remain stable)
+
+5. **Scalability**: Easy to add new features by following the same pattern
+
+6. **Team Collaboration**: Developers can work on different layers simultaneously
 
 #### **Project Structure:**
 
@@ -106,9 +111,10 @@ src/
 - Configurable token expiration via environment variables
 - Password hashing with bcrypt
 
-### 2. **CRUD Operations**
-- **Leaves**: Create, read, update leave requests
-- **Users**: Get, update, delete user profiles (for leave request ownership)
+### 2. **Two CRUD Operations**
+- **Users**: GET, UPDATE, DELETE operations (related to leaves)
+- **Leaves**: CREATE, READ, UPDATE operations (linked to users via foreign key)
+- Relationship: One user has many leaves (One-to-Many relationship)
 
 ### 3. **Database**
 - PostgreSQL for persistent data storage
@@ -159,7 +165,7 @@ DB_USERNAME=postgres
 DB_PASSWORD=password
 DB_NAME=leave_db
 
-JWT_SECRET=your-super-secret-key-change-in-production
+JWT_SECRET=secret-key-in-production
 JWT_EXPIRATION=7d
 
 PORT=3000
@@ -324,10 +330,6 @@ npm run build
 npm run start:prod
 ```
 
-## 📄 License
-
-This project is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-
 ## 👨‍💻 Development Notes
 
 ### Common Tasks
@@ -364,5 +366,5 @@ PORT=3001 npm run start:dev
 - Use login endpoint to get a new token
 - Include token in `Authorization: Bearer <token>` header
 
----
-
+## 👤 Author
+Dzikri Murtadlo as Backend Developer
