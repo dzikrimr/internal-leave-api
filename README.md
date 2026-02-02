@@ -20,65 +20,102 @@ This is a **production-ready REST API** demonstrating modern web application dev
 - **Error Handling**: Global exception filter for consistent error responses
 - **E2E Testing**: Comprehensive test suite for all API endpoints
 
-## 🏗️ Architecture Pattern
+## 🧩 Architecture Pattern
 
-### **Modular Architecture (Feature-Based)**
+### **Layered Architecture Pattern (Controllers, Services, Entities)**
 
-This project uses a **Modular Architecture** pattern, which is the recommended approach for NestJS applications. Here's why:
+This project uses a **Layered Architecture Pattern** within a Modular structure, which is the recommended approach for NestJS applications. Each feature module is organized into distinct layers:
 
-#### **Benefits:**
+- **Controllers**: Handle HTTP requests and responses
+- **Services**: Implement business logic
+- **Entities**: Define database models
+- **DTOs**: Data Transfer Objects for validation
 
-1. **Separation of Concerns**: Each feature (Auth, Users, Leaves) is isolated in its own module
-2. **Scalability**: Easy to add new features without affecting existing code
-3. **Reusability**: Modules can be imported and reused across the application
-4. **Maintainability**: Clear structure makes the codebase easier to understand and maintain
-5. **Testing**: Isolated modules make unit and integration testing simpler
-6. **Team Collaboration**: Multiple developers can work on different modules simultaneously
+#### **Why Layered Architecture?**
+
+1. **Separation of Concerns (SoC)**: Each layer has a specific responsibility:
+   - **Controllers** handle incoming requests, validate input, and return responses
+   - **Services** contain business logic and data manipulation
+   - **Entities** represent database schema and relationships
+   - **DTOs** ensure data validation and type safety
+
+2. **Single Responsibility Principle (SRP)**: Each class has one reason to change
+
+3. **Testability**: Each layer can be tested independently with mocked dependencies
+
+4. **Maintainability**: Changes in one layer don't affect others (if interfaces remain stable)
+
+5. **Scalability**: Easy to add new features by following the same pattern
+
+6. **Team Collaboration**: Developers can work on different layers simultaneously
 
 #### **Project Structure:**
 
 ```
 src/
-├── auth/                    # Authentication module
-│   ├── auth.controller.ts   # Login & Register endpoints
-│   ├── auth.service.ts      # Authentication logic (JWT, Password hashing)
-│   ├── auth.module.ts       # Module definition
-│   ├── jwt.strategy.ts      # JWT validation strategy
-│   ├── jwt-auth.guard.ts    # JWT authentication guard
-│   └── dto/
-│       └── auth.dto.ts      # DTO for validation
+├── auth/                        # Authentication module
+│   ├── controllers/
+│   │   └── auth.controller.ts  # Login & Register endpoints
+│   ├── services/
+│   │   └── auth.service.ts     # Authentication logic (JWT, Password hashing)
+│   ├── dto/
+│   │   └── auth.dto.ts         # DTO for validation
+│   ├── jwt/
+│   │   ├── jwt.strategy.ts     # JWT validation strategy
+│   │   └── jwt-auth.guard.ts   # JWT authentication guard
+│   └── auth.module.ts          # Module definition
 │
-├── users/                   # Users module
-│   ├── user.entity.ts       # User database entity
-│   ├── users.controller.ts  # CRUD endpoints
-│   ├── users.service.ts     # Business logic
-│   ├── users.module.ts      # Module definition
-│   └── dto/
-│       └── user.dto.ts      # DTO for validation
+├── users/                       # Users module
+│   ├── entities/
+│   │   └── user.entity.ts      # User database entity
+│   ├── controllers/
+│   │   └── users.controller.ts # CRUD endpoints
+│   ├── services/
+│   │   └── users.service.ts    # Business logic
+│   ├── dto/
+│   │   └── user.dto.ts         # DTO for validation
+│   └── users.module.ts         # Module definition
 │
-├── leaves/                  # Leaves module
-│   ├── leave.entity.ts      # Leave database entity
-│   ├── leaves.controller.ts # CRUD endpoints
-│   ├── leaves.service.ts    # Business logic
-│   ├── leaves.module.ts     # Module definition
-│   └── dto/
-│       └── leave.dto.ts     # DTO for validation
+├── leaves/                      # Leaves module
+│   ├── entities/
+│   │   └── leave.entity.ts     # Leave database entity
+│   ├── controllers/
+│   │   └── leaves.controller.ts # CRUD endpoints
+│   ├── services/
+│   │   └── leaves.service.ts   # Business logic
+│   ├── dto/
+│   │   └── leave.dto.ts        # DTO for validation
+│   └── leaves.module.ts        # Module definition
 │
-├── common/                  # Shared utilities
-│   └── filters/
-│       └── all-exceptions.filter.ts  # Global error handler
+├── common/                      # Shared utilities
+│   ├── filters/
+│   │   └── all-exceptions.filter.ts  # Global error handler
+│   └── interceptors/
+│       └── response.interceptor.ts   # Response formatting
 │
-├── app.module.ts            # Root module (imports all feature modules)
-└── main.ts                  # Application entry point
+├── app.controller.ts           # Root controller
+├── app.module.ts               # Root module (imports all feature modules)
+├── app.service.ts              # Root service
+└── main.ts                     # Application entry point
 ```
+
+#### **Layer Responsibilities:**
+
+| Layer | Responsibility | Example |
+|-------|---------------|---------|
+| **Controller** | HTTP request/response handling, Input validation, Route definitions | `@Controller()`, `@Get()`, `@Post()` |
+| **Service** | Business logic, Data manipulation, Repository calls | `@Injectable()`, CRUD operations |
+| **Entity** | Database schema definition, Relationships | `@Entity()`, `@Column()`, `@OneToMany()` |
+| **DTO** | Input validation, Type safety | `class-validator` decorators |
 
 #### **Why This Pattern?**
 
-- **Cohesion**: Related code is grouped together
-- **Loose Coupling**: Modules depend on abstractions, not implementations
-- **High Cohesion**: Each module handles a single business domain
-- **Easy to Test**: Mock dependencies easily in isolated modules
-- **Industry Standard**: Used by most enterprise NestJS applications
+- **Clean Code**: Each layer has a clear, focused responsibility
+- **Easy Debugging**: Issues can be traced to specific layers
+- **Reusability**: Services can be used by multiple controllers
+- **Type Safety**: Entities and DTOs provide compile-time type checking
+- **Industry Standard**: Used by enterprise applications worldwide
+- **NestJS Best Practice**: Follows NestJS official guidelines
 
 ## 🔐 Key Features
 
@@ -202,26 +239,28 @@ npm run test:cov
 
 | Method | Endpoint | Description | Auth Required |
 |--------|----------|-------------|---|
-| POST | `/auth/register` | Register a new user | ❌ |
-| POST | `/auth/login` | Login and get JWT token | ❌ |
+| POST | `/auth/register` | Register a new user | ❌ (Not Required) |
+| POST | `/auth/login` | Login and get JWT token | ❌ (Not Required) |
+
+> **Note**: Authentication endpoints do NOT require a token because users need to register/login before they can be authenticated.
 
 #### **Users**
 
 | Method | Endpoint | Description | Auth Required |
 |--------|----------|-------------|---|
-| GET | `/users` | Get all users | ✅ |
-| GET | `/users/:id` | Get user by ID | ✅ |
-| PUT | `/users/:id` | Update user | ✅ |
-| DELETE | `/users/:id` | Delete user | ✅ |
+| GET | `/users` | Get all users | ✅ (Required) |
+| GET | `/users/:id` | Get user by ID | ✅ (Required) |
+| PUT | `/users/:id` | Update user | ✅ (Required) |
+| DELETE | `/users/:id` | Delete user | ✅ (Required) |
 
 #### **Leaves**
 
 | Method | Endpoint | Description | Auth Required |
 |--------|----------|-------------|---|
-| POST | `/leaves` | Create leave request | ✅ |
-| GET | `/leaves` | Get all leave requests | ✅ |
-| GET | `/leaves/:id` | Get leave by ID | ✅ |
-| PUT | `/leaves/:id/status` | Update leave status | ✅ |
+| POST | `/leaves` | Create leave request | ✅ (Required) |
+| GET | `/leaves` | Get all leave requests | ✅ (Required) |
+| GET | `/leaves/:id` | Get leave by ID | ✅ (Required) |
+| PUT | `/leaves/:id/status` | Update leave status | ✅ (Required) |
 
 ### Example Requests
 
