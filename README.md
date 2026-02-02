@@ -1,23 +1,23 @@
-# Internal Leave Management API
+# Internal Leave Request API
 
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
 
 <p align="center">
-  A robust REST API for managing employee leave requests with JWT-based authentication built with <a href="https://nestjs.com/" target="blank">NestJS</a> and <a href="https://www.postgresql.org/" target="blank">PostgreSQL</a>.
+  A REST API for managing employee leave requests with JWT-based authentication built with <a href="https://nestjs.com/" target="blank">NestJS</a> and <a href="https://www.postgresql.org/" target="blank">PostgreSQL</a>.
 </p>
 
 ## 📋 Project Overview
 
 This is a **production-ready REST API** demonstrating modern web application development practices. It provides functionality for:
 
-- **User Management**: Register and authenticate users with JWT tokens
-- **Leave Management**: Create, read, and update leave requests
-- **Role-Based Access Control**: Secure endpoints with JWT authentication
-- **Database Integration**: PostgreSQL with TypeORM ORM
+- **Authentication**: Register and authenticate users with JWT tokens
+- **Leave Requests**: Create, read, and update leave requests
+- **JWT Authentication**: Secure endpoints with token-based auth
+- **Database Integration**: PostgreSQL with TypeORM
 - **Input Validation**: Class-validator for DTO validation
-- **Error Handling**: Global exception filter for consistent error responses
+- **Error Handling**: Global exception filter for consistent responses
 - **E2E Testing**: Comprehensive test suite for all API endpoints
 
 ## 🧩 Architecture Pattern
