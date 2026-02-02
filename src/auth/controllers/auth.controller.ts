@@ -14,7 +14,7 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Bad request - validation failed' })
   @HttpCode(HttpStatus.CREATED)
   register(@Body(new ValidationPipe()) body: AuthRegisterDto) {
-    return this.authService.register(body.email, body.password, body.name);
+    return this.authService.register(body.email, body.password, body.name, body.role);
   }
 
   @Post('login')

@@ -85,6 +85,9 @@ src/
 │   └── leaves.module.ts        # Module definition
 │
 ├── common/                      # Shared utilities
+│   ├── guards/
+│   │   ├── roles.decorator.ts   # Roles decorator for RBAC
+│   │   └── roles.guard.ts       # Roles guard to check user roles
 │   ├── filters/
 │   │   └── all-exceptions.filter.ts  # Global error handler
 │   └── interceptors/
@@ -117,7 +120,12 @@ src/
 - Auto-generated from decorators
 - Request/response schemas with examples
 
-### 3. **Two CRUD Operations**
+### 3. **Role-Based Access Control (RBAC)**
+- Two user roles: `user` and `admin`
+- `@Roles()` decorator protects endpoints
+- `RolesGuard` checks user roles before allowing access
+
+### 4. **Two CRUD Operations**
 - **Users**: GET, UPDATE, DELETE operations (related to leaves)
 - **Leaves**: CREATE, READ, UPDATE operations (linked to users via foreign key)
 - Relationship: One user has many leaves (One-to-Many relationship)
@@ -253,6 +261,44 @@ Swagger provides:
    - Enter `Bearer YOUR_ACCESS_TOKEN` (replace with your actual token)
    - Click "Authorize"
    - Now you can test protected endpoints
+
+### Role-Based Access Control (RBAC)
+
+This API implements **Role-Based Access Control** with two user roles:
+
+| Role | Description | Capabilities |
+|------|-------------|-------------|
+| **user** | Regular employee | Create leave requests, view leaves |
+| **admin** | Administrator | Full access to all endpoints, approve/reject leaves, manage users |
+
+#### Protected Endpoints (Admin Only)
+
+The following endpoints require `admin` role:
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/users` | Get all users |
+| GET | `/users/:id` | Get user by ID |
+| PUT | `/users/:id` | Update user |
+| DELETE | `/users/:id` | Delete user |
+| PUT | `/leaves/:id/status` | Update leave status (approve/reject) |
+
+#### Creating an Admin User
+
+To create an admin user, include the `role` field during registration:
+
+```bash
+curl -X POST http://localhost:3000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "admin@example.com",
+    "password": "admin123",
+    "name": "Admin User",
+    "role": "admin"
+  }'
+```
+
+> **Note**: By default, all users are registered with the `user` role. Only explicitly set `role: "admin"` during registration to create admin users.
 
 ### Using Postman
 1. Import the `postman_collection.json` file into Postman

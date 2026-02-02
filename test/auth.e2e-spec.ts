@@ -5,6 +5,7 @@ import { AppModule } from '../src/app.module';
 describe('Auth & Leave API E2E Tests', () => {
   let app;
   let token: string;
+  let adminToken: string;
   let userId: number;
   let leaveId: number;
   const testEmail = `test-${Date.now()}@example.com`;
@@ -75,6 +76,33 @@ describe('Auth & Leave API E2E Tests', () => {
         .send({ email: 'nonexistent@example.com', password: 'password123' })
         .expect(401);
     });
+
+    it('should register an admin user', async () => {
+      const adminEmail = `admin-${Date.now()}@example.com`;
+      const res = await request(app.getHttpServer())
+        .post('/auth/register')
+        .send({ email: adminEmail, password: 'adminpass123', name: 'Admin User', role: 'admin' })
+        .expect(201);
+
+      expect(res.body).toHaveProperty('id');
+      expect(res.body.role).toBe('admin');
+    });
+
+    it('should login as admin', async () => {
+      const adminEmail = `admin-${Date.now()}@example.com`;
+      await request(app.getHttpServer())
+        .post('/auth/register')
+        .send({ email: adminEmail, password: 'adminpass123', name: 'Admin User', role: 'admin' })
+        .expect(201);
+
+      const res = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ email: adminEmail, password: 'adminpass123' })
+        .expect(200);
+
+      expect(res.body).toHaveProperty('access_token');
+      adminToken = res.body.access_token;
+    });
   });
 
   // protected route tests
@@ -143,7 +171,7 @@ describe('Auth & Leave API E2E Tests', () => {
     it('should update leave status', () => {
       return request(app.getHttpServer())
         .put(`/leaves/${leaveId}/status`)
-        .set('Authorization', `Bearer ${token}`)
+        .set('Authorization', `Bearer ${adminToken}`)
         .send({ status: 'APPROVED' })
         .expect(200);
     });
@@ -161,12 +189,12 @@ describe('Auth & Leave API E2E Tests', () => {
     });
   });
 
-  // users CRUD tests
+  // users CRUD tests (admin only)
   describe('Users CRUD (GET/PUT/DELETE /users)', () => {
     it('should get all users', () => {
       return request(app.getHttpServer())
         .get('/users')
-        .set('Authorization', `Bearer ${token}`)
+        .set('Authorization', `Bearer ${adminToken}`)
         .expect(200)
         .then((res) => {
           expect(Array.isArray(res.body)).toBe(true);
@@ -176,7 +204,7 @@ describe('Auth & Leave API E2E Tests', () => {
     it('should get user by ID', () => {
       return request(app.getHttpServer())
         .get(`/users/${userId}`)
-        .set('Authorization', `Bearer ${token}`)
+        .set('Authorization', `Bearer ${adminToken}`)
         .expect(200)
         .then((res) => {
           expect(res.body.id).toBe(userId);
@@ -187,7 +215,7 @@ describe('Auth & Leave API E2E Tests', () => {
     it('should update user', () => {
       return request(app.getHttpServer())
         .put(`/users/${userId}`)
-        .set('Authorization', `Bearer ${token}`)
+        .set('Authorization', `Bearer ${adminToken}`)
         .send({ name: 'Test User' })
         .expect(200);
     });

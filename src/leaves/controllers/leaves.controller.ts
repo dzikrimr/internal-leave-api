@@ -1,7 +1,10 @@
 import { Controller, Post, Get, Put, Param, Body, UseGuards, Request, ValidationPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiForbiddenResponse } from '@nestjs/swagger';
 import { LeavesService } from '../services/leaves.service';
 import { JwtAuthGuard } from '../../auth/jwt/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/guards/roles.decorator';
+import { UserRole } from '../../users/entities/user.entity';
 import { CreateLeaveDto, UpdateLeaveStatusDto } from '../dto/leave.dto';
 
 @ApiTags('Leaves')
@@ -39,9 +42,12 @@ export class LeavesController {
   }
 
   @Put(':id/status')
-  @ApiOperation({ summary: 'Update leave request status' })
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Update leave request status (Admin only)' })
   @ApiResponse({ status: 200, description: 'Status updated successfully' })
   @ApiResponse({ status: 404, description: 'Leave request not found' })
+  @ApiForbiddenResponse({ description: 'Only admins can update leave status' })
   updateStatus(
     @Param('id') id: number,
     @Body(new ValidationPipe()) body: UpdateLeaveStatusDto,
