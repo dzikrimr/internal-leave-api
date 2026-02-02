@@ -19,6 +19,7 @@ This is a **production-ready REST API** demonstrating modern web application dev
 - **Input Validation**: Class-validator for DTO validation
 - **Error Handling**: Global exception filter for consistent responses
 - **E2E Testing**: Comprehensive test suite for all API endpoints
+- **Swagger Documentation**: Auto-generated interactive API docs
 
 ## 🧩 Architecture Pattern
 
@@ -111,7 +112,12 @@ src/
 - Configurable token expiration via environment variables
 - Password hashing with bcrypt
 
-### 2. **Two CRUD Operations**
+### 2. **Swagger API Documentation**
+- Interactive API docs at `/api`
+- Auto-generated from decorators
+- Request/response schemas with examples
+
+### 3. **Two CRUD Operations**
 - **Users**: GET, UPDATE, DELETE operations (related to leaves)
 - **Leaves**: CREATE, READ, UPDATE operations (linked to users via foreign key)
 - Relationship: One user has many leaves (One-to-Many relationship)
@@ -215,41 +221,43 @@ npm run test:cov
 
 ## 📚 API Documentation
 
+### Swagger UI
+
+Interactive API documentation is available via **Swagger UI**. After starting the server, visit:
+
+**📖 Swagger UI:** [http://localhost:3000/api](http://localhost:3000/api)
+
+Swagger provides:
+- Interactive endpoint exploration
+- Request/response examples
+- Schema documentation
+- Easy testing of endpoints
+
+### How to Authenticate in Swagger
+
+1. **First, register a user**:
+   - Click on `POST /auth/register`
+   - Click "Try it out"
+   - Enter email, password, and name
+   - Click "Execute"
+
+2. **Then, login to get JWT token**:
+   - Click on `POST /auth/login`
+   - Click "Try it out"
+   - Enter email and password
+   - Click "Execute"
+   - Copy the `access_token` from the response
+
+3. **Authorize in Swagger**:
+   - Click the "Authorize" button (🔓 icon) at the top of Swagger UI
+   - Enter `Bearer YOUR_ACCESS_TOKEN` (replace with your actual token)
+   - Click "Authorize"
+   - Now you can test protected endpoints
+
 ### Using Postman
 1. Import the `postman_collection.json` file into Postman
 2. Set the `token` variable after login to use protected endpoints
 3. All endpoints are pre-configured with examples
-
-### API Endpoints
-
-#### **Authentication**
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---|
-| POST | `/auth/register` | Register a new user | ❌ (Not Required) |
-| POST | `/auth/login` | Login and get JWT token | ❌ (Not Required) |
-
-> **Note**: Authentication endpoints do NOT require a token because users need to register/login before they can be authenticated.
-
-#### **Users**
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---|
-| GET | `/users` | Get all users | ✅ (Required) |
-| GET | `/users/:id` | Get user by ID | ✅ (Required) |
-| PUT | `/users/:id` | Update user | ✅ (Required) |
-| DELETE | `/users/:id` | Delete user | ✅ (Required) |
-
-#### **Leaves**
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---|
-| POST | `/leaves` | Create leave request | ✅ (Required) |
-| GET | `/leaves` | Get all leave requests | ✅ (Required) |
-| GET | `/leaves/:id` | Get leave by ID | ✅ (Required) |
-| PUT | `/leaves/:id/status` | Update leave status | ✅ (Required) |
-
-### Example Requests
 
 **Register a user:**
 ```bash
@@ -304,6 +312,8 @@ The test suite includes:
 - ✅ Leave CRUD operations
 - ✅ User CRUD operations
 - ✅ Token validation
+
+> **Note**: All API endpoints are documented in Swagger UI at `/api`. Refer to the interactive documentation for detailed request/response schemas.
 
 ## 🔒 Security Best Practices
 
