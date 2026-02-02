@@ -108,15 +108,6 @@ src/
 | **Entity** | Database schema definition, Relationships | `@Entity()`, `@Column()`, `@OneToMany()` |
 | **DTO** | Input validation, Type safety | `class-validator` decorators |
 
-#### **Why This Pattern?**
-
-- **Clean Code**: Each layer has a clear, focused responsibility
-- **Easy Debugging**: Issues can be traced to specific layers
-- **Reusability**: Services can be used by multiple controllers
-- **Type Safety**: Entities and DTOs provide compile-time type checking
-- **Industry Standard**: Used by enterprise applications worldwide
-- **NestJS Best Practice**: Follows NestJS official guidelines
-
 ## 🔐 Key Features
 
 ### 1. **JWT Authentication**
@@ -178,7 +169,7 @@ DB_USERNAME=postgres
 DB_PASSWORD=password
 DB_NAME=leave_db
 
-JWT_SECRET=your-super-secret-key-change-in-production
+JWT_SECRET=secret-key-in-production
 JWT_EXPIRATION=7d
 
 PORT=3000
