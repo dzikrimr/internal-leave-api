@@ -244,19 +244,25 @@ Swagger provides:
 ### How to Authenticate in Swagger
 
 1. **First, register a user**:
-   - Click on `POST /auth/register`
+   - Click on `POST /auth/register/user`
    - Click "Try it out"
    - Enter email, password, and name
    - Click "Execute"
 
-2. **Then, login to get JWT token**:
+2. **Or register an admin**:
+   - Click on `POST /auth/register/admin`
+   - Click "Try it out"
+   - Enter email, password, and name
+   - Click "Execute"
+
+3. **Then, login to get JWT token**:
    - Click on `POST /auth/login`
    - Click "Try it out"
    - Enter email and password
    - Click "Execute"
    - Copy the `access_token` from the response
 
-3. **Authorize in Swagger**:
+4. **Authorize in Swagger**:
    - Click the "Authorize" button (🔓 icon) at the top of Swagger UI
    - Enter `Bearer YOUR_ACCESS_TOKEN` (replace with your actual token)
    - Click "Authorize"
@@ -281,67 +287,102 @@ The following endpoints require `admin` role:
 | GET | `/users/:id` | Get user by ID |
 | PUT | `/users/:id` | Update user |
 | DELETE | `/users/:id` | Delete user |
-| PUT | `/leaves/:id/status` | Update leave status (approve/reject) |
+| PUT | `/leaves/:id/approve` | Approve leave request |
+| PUT | `/leaves/:id/reject` | Reject leave request |
 
 #### Creating an Admin User
 
-To create an admin user, include the `role` field during registration:
+To create an admin user, use the admin registration endpoint:
 
 ```bash
-curl -X POST http://localhost:3000/auth/register \
+curl -X POST http://localhost:3000/auth/register/admin \
   -H "Content-Type: application/json" \
   -d '{
     "email": "admin@example.com",
     "password": "admin123",
-    "name": "Admin User",
-    "role": "admin"
+    "name": "Admin User"
   }'
 ```
 
-> **Note**: By default, all users are registered with the `user` role. Only explicitly set `role: "admin"` during registration to create admin users.
+> **Note**: By default, all users registered via `/auth/register/user` get the `user` role. Use `/auth/register/admin` to create admin users.
 
 ### Using Postman
+
 1. Import the `postman_collection.json` file into Postman
 2. Set the `token` variable after login to use protected endpoints
 3. All endpoints are pre-configured with examples
 
-**Register a user:**
+#### Quick Start with Postman
+
+**1. Register a regular user:**
 ```bash
-curl -X POST http://localhost:3000/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "password": "password123"
-  }'
+POST {{baseUrl}}/auth/register/user
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "password123",
+  "name": "John Doe"
+}
 ```
 
-**Login:**
+**2. Register an admin user:**
 ```bash
-curl -X POST http://localhost:3000/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "password": "password123"
-  }'
+POST {{baseUrl}}/auth/register/admin
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "admin123",
+  "name": "Admin User"
+}
 ```
 
-**Get all leaves (with JWT token):**
+**3. Login:**
 ```bash
-curl -X GET http://localhost:3000/leaves \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
 ```
 
-**Create a leave request:**
+**4. Set the token variable:**
+- After login, copy the `access_token` from the response
+- Set the `token` variable in Postman to `Bearer YOUR_ACCESS_TOKEN`
+
+**5. Create a leave request:**
 ```bash
-curl -X POST http://localhost:3000/leaves \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "type": "ANNUAL",
-    "startDate": "2024-03-01",
-    "endDate": "2024-03-05",
-    "reason": "Vacation"
-  }'
+POST {{baseUrl}}/leaves
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "type": "ANNUAL",
+  "startDate": "2024-03-01",
+  "endDate": "2024-03-05",
+  "reason": "Vacation"
+}
+```
+
+**6. Get all leaves:**
+```bash
+GET {{baseUrl}}/leaves
+Authorization: Bearer {{token}}
+```
+
+**7. Admin - Approve leave:**
+```bash
+PUT {{baseUrl}}/leaves/1/approve
+Authorization: Bearer {{token}}
+```
+
+**8. Admin - Reject leave:**
+```bash
+PUT {{baseUrl}}/leaves/1/reject
+Authorization: Bearer {{token}}
 ```
 
 ## 🧪 Testing
