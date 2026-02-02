@@ -1,53 +1,44 @@
-# Internal Leave Management API
+# Internal Leave Request API
 
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
 
 <p align="center">
-  A robust REST API for managing employee leave requests with JWT-based authentication built with <a href="https://nestjs.com/" target="blank">NestJS</a> and <a href="https://www.postgresql.org/" target="blank">PostgreSQL</a>.
+  A REST API for managing employee leave requests with JWT-based authentication built with <a href="https://nestjs.com/" target="blank">NestJS</a> and <a href="https://www.postgresql.org/" target="blank">PostgreSQL</a>.
 </p>
 
 ## 📋 Project Overview
 
 This is a **production-ready REST API** demonstrating modern web application development practices. It provides functionality for:
 
-- **User Management**: Register and authenticate users with JWT tokens
-- **Leave Management**: Create, read, and update leave requests
-- **Role-Based Access Control**: Secure endpoints with JWT authentication
-- **Database Integration**: PostgreSQL with TypeORM ORM
+- **Authentication**: Register and authenticate users with JWT tokens
+- **Leave Requests**: Create, read, and update leave requests
+- **JWT Authentication**: Secure endpoints with token-based auth
+- **Database Integration**: PostgreSQL with TypeORM
 - **Input Validation**: Class-validator for DTO validation
-- **Error Handling**: Global exception filter for consistent error responses
+- **Error Handling**: Global exception filter for consistent responses
 - **E2E Testing**: Comprehensive test suite for all API endpoints
 
 ## 🧩 Architecture Pattern
 
 ### **Layered Architecture Pattern (Controllers, Services, Entities)**
 
-This project uses a **Layered Architecture Pattern** within a Modular structure, which is the recommended approach for NestJS applications. Each feature module is organized into distinct layers:
+This project uses a **Layered Architecture Pattern** within a Modular structure. Each feature module is organized into distinct layers:
 
-- **Controllers**: Handle HTTP requests and responses
-- **Services**: Implement business logic
-- **Entities**: Define database models
-- **DTOs**: Data Transfer Objects for validation
+| Layer | Responsibility | Example |
+|-------|---------------|---------|
+| **Controller** | HTTP request/response handling, Input validation | `@Controller()`, `@Get()` |
+| **Service** | Business logic, Data manipulation | `@Injectable()`, CRUD operations |
+| **Entity** | Database schema, Relationships | `@Entity()`, `@Column()` |
+| **DTO** | Input validation, Type safety | `class-validator` decorators |
 
-#### **Why Layered Architecture?**
+#### **Benefits:**
 
-1. **Separation of Concerns (SoC)**: Each layer has a specific responsibility:
-   - **Controllers** handle incoming requests, validate input, and return responses
-   - **Services** contain business logic and data manipulation
-   - **Entities** represent database schema and relationships
-   - **DTOs** ensure data validation and type safety
-
-2. **Single Responsibility Principle (SRP)**: Each class has one reason to change
-
-3. **Testability**: Each layer can be tested independently with mocked dependencies
-
-4. **Maintainability**: Changes in one layer don't affect others (if interfaces remain stable)
-
-5. **Scalability**: Easy to add new features by following the same pattern
-
-6. **Team Collaboration**: Developers can work on different layers simultaneously
+- **Separation of Concerns**: Each layer has a specific responsibility
+- **Testability**: Can test layers independently with mocked dependencies
+- **Maintainability**: Changes in one layer don't affect others
+- **Scalability**: Easy to add new features following the same pattern
 
 #### **Project Structure:**
 
@@ -108,15 +99,6 @@ src/
 | **Entity** | Database schema definition, Relationships | `@Entity()`, `@Column()`, `@OneToMany()` |
 | **DTO** | Input validation, Type safety | `class-validator` decorators |
 
-#### **Why This Pattern?**
-
-- **Clean Code**: Each layer has a clear, focused responsibility
-- **Easy Debugging**: Issues can be traced to specific layers
-- **Reusability**: Services can be used by multiple controllers
-- **Type Safety**: Entities and DTOs provide compile-time type checking
-- **Industry Standard**: Used by enterprise applications worldwide
-- **NestJS Best Practice**: Follows NestJS official guidelines
-
 ## 🔐 Key Features
 
 ### 1. **JWT Authentication**
@@ -124,10 +106,9 @@ src/
 - Configurable token expiration via environment variables
 - Password hashing with bcrypt
 
-### 2. **Two CRUD Operations**
-- **Users**: GET, UPDATE, DELETE operations (related to leaves)
-- **Leaves**: CREATE, READ, UPDATE operations (linked to users via foreign key)
-- Relationship: One user has many leaves (One-to-Many relationship)
+### 2. **CRUD Operations**
+- **Leaves**: Create, read, update leave requests
+- **Users**: Get, update, delete user profiles (for leave request ownership)
 
 ### 3. **Database**
 - PostgreSQL for persistent data storage
