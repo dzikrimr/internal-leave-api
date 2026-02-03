@@ -3,6 +3,19 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AppService } from './app.service';
 
 /**
+ * API Info Response interface
+ */
+export interface ApiInfoResponse {
+  name: string;
+  version: string;
+  description: string;
+  status: string;
+  timestamp: string;
+  author: string;
+  documentation: string;
+}
+
+/**
  * Root Controller - Health Check
  * Provides API root endpoint and health check functionality
  */
@@ -21,7 +34,7 @@ export class AppController {
     description: 'Root endpoint that returns API information and health status. Use this to verify the API is running.'
   })
   @ApiResponse({ status: 200, description: 'API is running. Returns API name, version, and timestamp.' })
-  getApiInfo(): object {
+  getApiInfo(): ApiInfoResponse {
     return {
       name: 'Internal Leave Request API',
       version: '1.0.0',

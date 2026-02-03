@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppController } from './app.controller';
+import { AppController, ApiInfoResponse } from './app.controller';
 import { AppService } from './app.service';
 
 describe('AppController', () => {
@@ -14,9 +14,15 @@ describe('AppController', () => {
     appController = app.get<AppController>(AppController);
   });
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+  describe('getApiInfo', () => {
+    it('should return API info', () => {
+      const result: ApiInfoResponse = appController.getApiInfo();
+      expect(result).toHaveProperty('name');
+      expect(result).toHaveProperty('version');
+      expect(result).toHaveProperty('status');
+      expect(result.name).toBe('Internal Leave Request API');
+      expect(result.version).toBe('1.0.0');
+      expect(result.status).toBe('healthy');
     });
   });
 });
