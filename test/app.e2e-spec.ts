@@ -20,6 +20,12 @@ describe('AppController (e2e)', () => {
     return request(app.getHttpServer())
       .get('/')
       .expect(200)
-      .expect('Hello World!');
+      .expect('Content-Type', /json/)
+      .expect((res) => {
+        expect(res.body).toHaveProperty('name');
+        expect(res.body.name).toBe('Internal Leave Request API');
+        expect(res.body).toHaveProperty('status');
+        expect(res.body.status).toBe('healthy');
+      });
   });
 });

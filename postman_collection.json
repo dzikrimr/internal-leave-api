@@ -41,7 +41,7 @@
       "name": "Authentication",
       "item": [
         {
-          "name": "Register Regular User",
+          "name": "Register User",
           "request": {
             "method": "POST",
             "header": [
@@ -60,39 +60,11 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/auth/register/user",
+              "raw": "{{baseUrl}}/auth/register",
               "host": ["{{baseUrl}}"],
-              "path": ["auth", "register", "user"]
+              "path": ["auth", "register"]
             },
-            "description": "Register a new regular user with default 'user' role"
-          },
-          "response": []
-        },
-        {
-          "name": "Register Admin User",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin123\",\n  \"name\": \"Admin User\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth/register/admin",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "register", "admin"]
-            },
-            "description": "Register a new admin user with 'admin' role"
+            "description": "Register a new user with default 'user' role"
           },
           "response": []
         },

@@ -13,9 +13,9 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(email: string, password: string, name: string, role?: UserRole) {
+  async register(email: string, password: string, name: string) {
     const hashed = await bcrypt.hash(password, 10);
-    const user = this.userRepo.create({ email, password: hashed, name, role: role || UserRole.USER });
+    const user = this.userRepo.create({ email, password: hashed, name, role: UserRole.USER });
     return this.userRepo.save(user);
   }
 
