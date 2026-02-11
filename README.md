@@ -21,6 +21,326 @@ This is a **production-ready REST API** demonstrating modern web application dev
 - **E2E Testing**: Comprehensive test suite for all API endpoints
 - **Swagger Documentation**: Auto-generated interactive API docs
 
+---
+
+## 🛠️ Development Process (Step by Step)
+
+### Phase 1: Project Initialization
+
+**Step 1: Create NestJS Project**
+```bash
+npm i -g @nestjs/cli
+nest new internal-leave-api
+cd internal-leave-api
+```
+
+**Step 2: Install Core Dependencies**
+```bash
+# Database
+npm install --save @nestjs/typeorm typeorm pg
+
+# Authentication
+npm install --save @nestjs/passport passport passport-jwt @nestjs/jwt bcrypt
+
+# Validation & Documentation
+npm install --save class-validator class-transformer @nestjs/swagger swagger-ui-express
+
+# Testing
+npm install --save-dev @nestjs/testing @nestjs/cli @nestjs/schematics
+```
+
+**Step 3: Setup Project Structure**
+```
+src/
+├── auth/
+├── users/
+├── leaves/
+├── common/
+└── app.module.ts
+```
+
+---
+
+### Phase 2: Database & Entity Design
+
+**Step 4: Create User Entity**
+```typescript
+// src/users/entities/user.entity.ts
+@Entity()
+export class User {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ unique: true })
+  email: string;
+
+  @Column()
+  password: string;
+
+  @Column()
+  name: string;
+
+  @Column({ default: 'user' })
+  role: string;
+
+  @OneToMany(() => Leave, (leave) => leave.user)
+  leaves: Leave[];
+}
+```
+
+**Step 5: Create Leave Entity**
+```typescript
+// src/leaves/entities/leave.entity.ts
+@Entity()
+export class Leave {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  type: string;
+
+  @Column()
+  startDate: string;
+
+  @Column()
+  endDate: string;
+
+  @Column({ nullable: true })
+  reason: string;
+
+  @Column({ default: 'PENDING' })
+  status: string;
+
+  @ManyToOne(() => User, (user) => user.leaves)
+  user: User;
+}
+```
+
+---
+
+### Phase 3: Authentication Module
+
+**Step 6: Implement Auth Service**
+```typescript
+// src/auth/services/auth.service.ts
+@Injectable()
+export class AuthService {
+  constructor(
+    private usersService: UsersService,
+    private jwtService: JwtService,
+  ) {}
+
+  async validateUser(email: string, pass: string): Promise<User> {
+    const user = await this.usersService.findByEmail(email);
+    if (user && await bcrypt.compare(pass, user.password)) {
+      return user;
+    }
+    return null;
+  }
+
+  async login(user: User) {
+    const payload = { email: user.email, sub: user.id, role: user.role };
+    return { access_token: this.jwtService.sign(payload) };
+  }
+}
+```
+
+**Step 7: Implement JWT Strategy**
+```typescript
+// src/auth/jwt/jwt.strategy.ts
+@Injectable()
+export class JwtStrategy extends PassportStrategy(Strategy) {
+  constructor() {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
+      secretOrKey: process.env.JWT_SECRET,
+    });
+  }
+
+  async validate(payload: any) {
+    return { userId: payload.sub, email: payload.email, role: payload.role };
+  }
+}
+```
+
+---
+
+### Phase 4: CRUD Operations
+
+**Step 8: Users Module CRUD**
+- GET `/users` - Get all users (Admin only)
+- GET `/users/:id` - Get user by ID
+- PUT `/users/:id` - Update user
+- DELETE `/users/:id` - Delete user
+
+**Step 9: Leaves Module CRUD**
+- POST `/leaves` - Create leave request
+- GET `/leaves` - Get all leaves (Admin) / own leaves (User)
+- GET `/leaves/:id` - Get leave by ID
+- PUT `/leaves/:id` - Update leave
+- PUT `/leaves/:id/approve` - Approve leave (Admin)
+- PUT `/leaves/:id/reject` - Reject leave (Admin)
+
+---
+
+### Phase 5: Testing & Documentation
+
+**Step 10: Implement E2E Tests**
+```typescript
+// test/auth.e2e-spec.ts
+describe('AuthController (e2e)', () => {
+  it('should register a new user', () => {
+    return request(app.getHttpServer())
+      .post('/auth/register/user')
+      .send({ email: 'test@example.com', password: 'password123', name: 'Test User' })
+      .expect(201);
+  });
+});
+```
+
+**Step 11: Configure Swagger**
+```typescript
+// main.ts
+const config = new DocumentBuilder()
+  .setTitle('Internal Leave API')
+  .setDescription('API for managing employee leave requests')
+  .setVersion('1.0')
+  .addBearerAuth()
+  .build();
+```
+
+---
+
+## 🚨 Challenges & Solutions
+
+### Challenge 1: JWT Authentication Setup
+
+**Problem:** Initial setup of JWT authentication was confusing with multiple Passport strategies.
+
+**Solution:**
+1. Installed required packages: `@nestjs/passport`, `passport`, `passport-jwt`, `@nestjs/jwt`
+2. Created a dedicated `jwt.strategy.ts` for token validation
+3. Created `jwt-auth.guard.ts` to protect routes
+4. Configured `AuthGuard` in controllers
+
+**Reference Files:**
+- [`src/auth/jwt/jwt.strategy.ts`](src/auth/jwt/jwt.strategy.ts)
+- [`src/auth/jwt/jwt-auth.guard.ts`](src/auth/jwt/jwt-auth.guard.ts)
+
+---
+
+### Challenge 2: User Role-Based Access Control (RBAC)
+
+**Problem:** Needed to restrict admin-only endpoints.
+
+**Solution:**
+1. Created custom `@Roles()` decorator in [`src/common/guards/roles.decorator.ts`](src/common/guards/roles.decorator.ts)
+2. Implemented `RolesGuard` in [`src/common/guards/roles.guard.ts`](src/common/guards/roles.guard.ts)
+3. Applied `@Roles('admin')` to protected endpoints
+
+```typescript
+@Roles('admin')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Get()
+findAll() {
+  return this.usersService.findAll();
+}
+```
+
+---
+
+### Challenge 3: TypeORM Entity Relationships
+
+**Problem:** Configuring One-to-Many relationship between User and Leave entities.
+
+**Solution:**
+1. Added `@OneToMany(() => Leave, (leave) => leave.user)` in User entity
+2. Added `@ManyToOne(() => User, (user) => user.leaves)` in Leave entity
+3. Set up proper cascade options for automatic relationship handling
+
+---
+
+### Challenge 4: Password Hashing
+
+**Problem:** Storing plain text passwords is insecure.
+
+**Solution:**
+1. Used `bcrypt` library with 10 salt rounds
+2. Hash password during registration in [`auth.service.ts`](src/auth/services/auth.service.ts)
+3. Compare hashed password during login
+
+```typescript
+const hashedPassword = await bcrypt.hash(password, 10);
+await bcrypt.compare(password, user.password);
+```
+
+---
+
+### Challenge 5: E2E Test Database Isolation
+
+**Problem:** Tests were interfering with each other and using real database.
+
+**Solution:**
+1. Created test configuration in [`test/jest-e2e.json`](test/jest-e2e.json)
+2. Used unique test emails with timestamps: `` `admin-test-${Date.now()}@example.com` ``
+3. Hash password `'adminpass123'` for all test users
+4. Clean up test data after each test suite
+
+**Test Password Reference:** `adminpass123` (used in [`test/auth.e2e-spec.ts`](test/auth.e2e-spec.ts))
+
+---
+
+### Challenge 6: Global Error Handling
+
+**Problem:** Inconsistent error responses across different endpoints.
+
+**Solution:**
+1. Created `AllExceptionsFilter` in [`src/common/filters/all-exceptions.filter.ts`](src/common/filters/all-exceptions.filter.ts)
+2. Created `ResponseInterceptor` in [`src/common/interceptors/response.interceptor.ts`](src/common/interceptors/response.interceptor.ts)
+3. Applied consistent response format for all endpoints
+
+---
+
+### Challenge 7: DTO Validation
+
+**Problem:** Invalid data reaching service layer.
+
+**Solution:**
+1. Created DTOs with `class-validator` decorators in [`src/auth/dto/auth.dto.ts`](src/auth/dto/auth.dto.ts)
+2. Added `ValidationPipe` globally in `main.ts`
+3. Added custom validation messages
+
+```typescript
+// Example DTO
+export class LoginDto {
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  @MinLength(6)
+  password: string;
+}
+```
+
+---
+
+### Challenge 8: CORS Configuration
+
+**Problem:** Frontend couldn't access API due to CORS restrictions.
+
+**Solution:**
+Enabled CORS in [`src/main.ts`](src/main.ts):
+
+```typescript
+app.enableCors({
+  origin: true,
+  credentials: true,
+});
+```
+
+---
+
 ## 🧩 Architecture Pattern
 
 ### **Layered Architecture Pattern (Controllers, Services, Entities)**
@@ -35,15 +355,10 @@ This project uses a **Layered Architecture Pattern** within a Modular structure,
 #### **Why Layered Architecture?**
 
 1. **Separation of Concerns (SoC)**: Each layer has a specific responsibility
-
 2. **Single Responsibility Principle (SRP)**: Each class has one reason to change
-
 3. **Testability**: Each layer can be tested independently with mocked dependencies
-
 4. **Maintainability**: Changes in one layer don't affect others (if interfaces remain stable)
-
 5. **Scalability**: Easy to add new features by following the same pattern
-
 6. **Team Collaboration**: Developers can work on different layers simultaneously
 
 #### **Project Structure:**
@@ -108,6 +423,8 @@ src/
 | **Entity** | Database schema definition, Relationships | `@Entity()`, `@Column()`, `@OneToMany()` |
 | **DTO** | Input validation, Type safety | `class-validator` decorators |
 
+---
+
 ## 🔐 Key Features
 
 ### 1. **JWT Authentication**
@@ -130,19 +447,21 @@ src/
 - **Leaves**: CREATE, READ, UPDATE operations (linked to users via foreign key)
 - Relationship: One user has many leaves (One-to-Many relationship)
 
-### 3. **Database**
+### 5. **Database**
 - PostgreSQL for persistent data storage
 - TypeORM as ORM for database operations
 - Automatic migration support via synchronize option
 
-### 4. **Input Validation**
+### 6. **Input Validation**
 - Class-validator decorators on DTOs
 - Automatic validation pipe in controllers
 - Consistent error responses
 
-### 5. **Error Handling**
+### 7. **Error Handling**
 - Global exception filter for consistent error format
 - Detailed error messages with timestamps
+
+---
 
 ## 🚀 Getting Started
 
@@ -195,6 +514,8 @@ createdb leave_db
 psql -U postgres -c "CREATE DATABASE leave_db;"
 ```
 
+---
+
 ## 📦 Project Setup & Running
 
 ### Development Mode
@@ -226,6 +547,8 @@ npm run test:e2e
 # Generate test coverage report
 npm run test:cov
 ```
+
+---
 
 ## 📚 API Documentation
 
@@ -312,78 +635,7 @@ curl -X POST http://localhost:3000/auth/register/admin \
 2. Set the `token` variable after login to use protected endpoints
 3. All endpoints are pre-configured with examples
 
-#### Quick Start with Postman
-
-**1. Register a regular user:**
-```bash
-POST {{baseUrl}}/auth/register/user
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "password": "password123",
-  "name": "John Doe"
-}
-```
-
-**2. Register an admin user:**
-```bash
-POST {{baseUrl}}/auth/register/admin
-Content-Type: application/json
-
-{
-  "email": "admin@example.com",
-  "password": "admin123",
-  "name": "Admin User"
-}
-```
-
-**3. Login:**
-```bash
-POST {{baseUrl}}/auth/login
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "password": "password123"
-}
-```
-
-**4. Set the token variable:**
-- After login, copy the `access_token` from the response
-- Set the `token` variable in Postman to `Bearer YOUR_ACCESS_TOKEN`
-
-**5. Create a leave request:**
-```bash
-POST {{baseUrl}}/leaves
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-{
-  "type": "ANNUAL",
-  "startDate": "2024-03-01",
-  "endDate": "2024-03-05",
-  "reason": "Vacation"
-}
-```
-
-**6. Get all leaves:**
-```bash
-GET {{baseUrl}}/leaves
-Authorization: Bearer {{token}}
-```
-
-**7. Admin - Approve leave:**
-```bash
-PUT {{baseUrl}}/leaves/1/approve
-Authorization: Bearer {{token}}
-```
-
-**8. Admin - Reject leave:**
-```bash
-PUT {{baseUrl}}/leaves/1/reject
-Authorization: Bearer {{token}}
-```
+---
 
 ## 🧪 Testing
 
@@ -402,6 +654,8 @@ The test suite includes:
 
 > **Note**: All API endpoints are documented in Swagger UI at `/api`. Refer to the interactive documentation for detailed request/response schemas.
 
+---
+
 ## 🔒 Security Best Practices
 
 1. **JWT Secret**: Change the `JWT_SECRET` in production
@@ -410,6 +664,8 @@ The test suite includes:
 4. **Input Validation**: All inputs validated using class-validator
 5. **Global Error Handling**: No sensitive information leaked in error responses
 6. **HTTP Guard**: JWT auth guard protects sensitive endpoints
+
+---
 
 ## 📦 Deployment
 
@@ -427,23 +683,7 @@ npm run build
 npm run start:prod
 ```
 
-## 👨‍💻 Development Notes
-
-### Common Tasks
-
-**Adding a new feature:**
-```bash
-nest g module features/new-feature
-nest g controller features/new-feature
-nest g service features/new-feature
-```
-
-**Database migrations:**
-The project uses TypeORM with `synchronize: true` in development. For production, use TypeORM migrations:
-```bash
-npm run typeorm migration:generate
-npm run typeorm migration:run
-```
+---
 
 ## 🆘 Troubleshooting
 
@@ -463,5 +703,8 @@ PORT=3001 npm run start:dev
 - Use login endpoint to get a new token
 - Include token in `Authorization: Bearer <token>` header
 
+---
+
 ## 👤 Author
+
 Dzikri Murtadlo as Backend Developer
